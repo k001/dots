@@ -1,0 +1,137 @@
+---
+version: "2"
+services:
+  portainer:
+    image: "portainer/portainer"
+    restart: "unless-stopped"
+    container_name: portainer
+    ports:
+      - 8000:8000
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /Volumes/LaCie/Servers/portainer/portainer_data:/data
+  radarr:
+    image: "linuxserver/radarr"
+    restart: "unless-stopped"
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Mexico_City
+      - UMASK_SET=022 #optional
+    volumes:
+      - /Volumes/LaCie/Servers/radarr/config:/config
+      - /Volumes/LaCie/Media/movies:/downloads
+    ports:
+      - 7878:7878
+  sonarr:
+    image: "linuxserver/sonarr"
+    restart: "unless-stopped"
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Mexico_City
+      - UMASK_SET=022 #optional
+    volumes:
+      - /Volumes/LaCie/Servers/sonarr/config:/config
+      - /Volumes/LaCie/Media/tv:/downloads
+    ports:
+      - 8989:8989
+  transmission:
+    image: "linuxserver/transmission"
+    restart: "unless-stopped"
+    container_name: transmission
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Mexico_City
+      - TRANSMISSION_WEB_HOME=/combustion-release/ #optional
+      - USER=username #optional
+      - PASS=password #optional
+    volumes:
+      - /Volumes/LaCie/Servers/transmission/config:/config
+      - /Volumes/LaCie/Media/transmission/downloads:/downloads
+      # - /Volumes/LaCie/Servers/transmission/watch:/watch
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+  jackett:
+    image: "linuxserver/jackett"
+    restart: "unless-stopped"
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Mexico_City
+      - RUN_OPTS=run options here #optional
+    volumes:
+      - /Volumes/LaCie/Servers/jackett/config:/config
+      - /Volumes/LaCie/Servers/jackett/downloads:/downloads
+    ports:
+      - 9117:9117
+  plex:
+    image: "linuxserver/plex"
+    restart: "unless-stopped"
+    container_name: plex
+    #network_mode: host
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=docker
+      - UMASK_SET=022 #optional
+      # - PLEX_CLAIM=claim-M3jExhJyQNSxDjN_RWts #optional
+      - ADVERTISE_IP="http://172.16.1.120:32400/"
+    volumes:
+      - /Volumes/LaCie/Servers/plex/config:/config
+      - /Volumes/LaCie/Media/tv:/tv
+      - /Volumes/LaCie/Media/movies:/movies
+    ports:
+      - 32400:32400
+      - 3005:3005
+      - 8324:8324
+      - 32469:32469
+      - 1900:1900/udp
+      - 32410:32410/udp
+      - 32412:32412/udp
+      - 32413:32413/udp
+      - 32414:32414/udp
+  bazarr:
+    image: "linuxserver/bazarr"
+    container_name: bazarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Mexico_City
+      - UMASK_SET=022 #optional
+    volumes:
+      - /Volumes/LaCie/Servers/bazarr/config:/config
+      - /Volumes/LaCie/Media/movies:/movies
+      - /Volumes/LaCie/Media/tv:/tv
+    ports:
+      - 6767:6767
+    restart: "unless-stopped"
+  netdata:
+    image: "netdata/netdata"
+    container_name: "netdata"
+    network_mode: "bridge"
+    hostname: "cerberus"
+    restart: "unless-stopped"
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    ports:
+      - 19999:19999
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DOCKER_USR=root
+volumes:
+  netdataconfig:
+  netdatalib:
+  netdatadb:
